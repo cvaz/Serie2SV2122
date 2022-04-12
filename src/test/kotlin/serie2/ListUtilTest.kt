@@ -55,53 +55,61 @@ fun <E> emptyListWithSentinel(): Node<E> {
 
 fun getListWithSentinel(begin: Int, end: Int, step: Int): Node<Int> {
     val array = ArrayList<Int>()
-        var i = begin
-        while (i <= end) {
-            array.add(i)
-            i += step
-        }
+    var i = begin
+    while (i <= end) {
+        array.add(i)
+        i += step
+    }
     return makeList(array)
 }
+
 
 fun <E> makeList(array: ArrayList<E>): Node<E> {
     val list: Node<E> = emptyListWithSentinel()
     for (v in array) {
         val new = newNode(v, list.previous, list)
-         list?.previous?.next=new
-        list.previous=new
+        list.previous?.let { lp ->
+            lp.next = new
+        }
+        list.previous = new
     }
     return list
 }
- fun <E> makeList(vararg array: E): Node<E> {
-        val list: Node<E> = emptyListWithSentinel()
-        for (v in array) {
-            val new = newNode(v, list.previous, list)
-            list.previous?.next=new
-            list.previous=new
+fun <E> makeList(vararg array: E): Node<E> {
+    val list: Node<E> = emptyListWithSentinel()
+    for (v in array) {
+        val new = newNode(v, list.previous, list)
+        list.previous?.let { lp ->
+            lp.next = new
         }
-        return list
+        list.previous = new
     }
+    return list
+}
 
 fun <E> assertListEqualsWithSentinel(expected: Node<E>, result: Node<E>, cmp: Comparator<E>) {
     var listExpected = expected.next
     var listResult = result.next
     while (listExpected != expected && listResult != result) {
-        assertEquals(0, cmp.compare(listExpected?.value, listResult?.value))
-            listExpected = listExpected?.next
-            listResult = listResult?.next
+        listExpected?.let { le ->
+            listResult?.let { lr -> assertEquals(0, cmp.compare(le.value, lr.value))
+                listExpected = le.next
+                listResult = lr.next
+            }
+        }
     }
-        assertTrue(listExpected == expected)
-        assertTrue(listResult == result)
-    }
+    assertTrue(listExpected == expected)
+    assertTrue(listResult == result)
+}
 
-
-fun <E> isSorted(list: Node<E>, cmp: Comparator<E?>): Boolean {
+fun <E> isSorted(list: Node<E>, cmp: Comparator<E>): Boolean {
     var curr = list.next
     if (curr == list || curr == list.previous) return true
-    while (curr?.next != list) {
-        if (cmp.compare(curr?.value, curr?.next?.value) > 0) return false
+    while ( curr?.let{ cr->cr.next} != list) {
+        if ( cmp.compare(curr?.let{ cr-> cr.value}, curr?.let{it-> it.next?.let{it1->it1.value}}) > 0) return false
         curr = curr?.next
     }
+
     return true
 }
 
@@ -135,19 +143,19 @@ fun getRandomListSentinel(dimension: Int): Node<Int>{
     return list
 }
 
-    /*
-	 *
-	 * Generic Methods
-	 */
-    fun <E> newNode(v: E): Node<E> {
-        val result = Node<E>()
-        result.value = v
-        return result
-    }
+/*
+ *
+ * Generic Methods
+ */
+fun <E> newNode(v: E): Node<E> {
+    val result = Node<E>()
+    result.value = v
+    return result
+}
 
-    fun <E> newNode(v: E, p: Node<E>?, n: Node<E>?): Node<E> {
-        val result = newNode(v)
-        result.previous = p
-        result.next = n
-        return result
-    }
+fun <E> newNode(v: E, p: Node<E>?, n: Node<E>?): Node<E> {
+    val result = newNode(v)
+    result.previous = p
+    result.next = n
+    return result
+}
